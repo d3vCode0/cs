@@ -10,7 +10,7 @@ import org.jsoup.nodes.Element
 // import java.time.format.TextStyle
 // import java.util.Locale
 
-class AnimercoProviderApi : MainAPI() {
+class AnimercoApi : MainAPI() {
     override var mainUrl = "https://ww3.animerco.org"
     override var name = "Animerco"
     override val hasMainPage = true
@@ -32,9 +32,9 @@ class AnimercoProviderApi : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if(page ==1) "${mainUrl}/${request.data}/" else "${mainUrl}/${request.data}/page/${page}/"
-        val document = app.get(url).document
+        var document = app.get(url).document
         if(document.select("title").text() == "Just a moment...") {
-            document = app.get(url, interceptor = interceptor).document
+            app.get(url, interceptor = interceptor).document.also { document = it }
         }
         val home = document.select("div.page-content div.container div.row div.box-5x1").mapNotNull {
             it.toSearchResult()
