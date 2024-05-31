@@ -23,13 +23,11 @@ class AnimercoApi : MainAPI() {
     // val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
 
     override val mainPage = mainPageOf(
-        "animes" to "Animes",
-        "movies" to "Movies",
-        "episodes" to "episodes",
-        "schedule" to "Episode Schedule"
+        "${mainUrl}/animes/" to "Animes",
+        "${mainUrl}/movies/" to "Movies",
+        "${mainUrl}/episodes/" to "episodes",
+        "${mainUrl}/schedule/" to "Episode Schedule"
     )
-
-    @TargetApi(Build.VERSION_CODES.O)
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val regex = Regex("animes|seasons|movies")
         val isTrue = regex.containsMatchIn(request.data)
