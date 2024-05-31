@@ -4,10 +4,10 @@ import com.lagradost.cloudstream3.*
 import org.jsoup.nodes.Element
 
 class AnimercoApi : MainAPI() {
-    override var mainUrl = ""
-    override var name = ""
+    override var mainUrl = "https://ww3.animerco.org"
+    override var name = "AmineRCO"
     override val hasMainPage = true
-    override var lang = "pt"
+    override var lang = "ar"
 
     override val supportedTypes = setOf(
         TvType.Anime,
