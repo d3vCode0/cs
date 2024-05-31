@@ -24,14 +24,8 @@ class AnimercoApi : MainAPI() {
         "animes" to "Animes",
         "movies" to "Movies",
         "episodes" to "episodes",
-        //"schedule" to "Episode Schedule"
+        "schedule" to "Episode Schedule"
     )
-
-    // companion object {
-    //     val cookies = mapOf(
-    //         "cookie" to "_ga_QE0HFP3PHP=GS1.1.1717154429.1.0.1717154429.0.0.0; _ga=GA1.1.982484213.1717154429"
-    //     )
-    // }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = if(page ==1) "${mainUrl}/${request.data}/" else "${mainUrl}/${request.data}/page/${page}/"
@@ -39,17 +33,13 @@ class AnimercoApi : MainAPI() {
         if(document.select("title").text() == "Just a moment...") {
             app.get(url, interceptor = interceptor).document.also { document = it }
         }
-        val home = when (request.name) {
-            "animes", "movies" -> {
-                document.select("div.page-content div.container div.row div.box-5x1").mapNotNull {
-                    it.toSearchResult()
-                }
-            }
-            else -> {
-                document.select("div.page-content div.container div.row div.col-12").mapNotNull {
-                    it.toSearchResult()
-                }
-            }
+        val regex = Regex("movies|animes|seasons|schedule")
+        val home = if (regex.matches(request.name)) {
+            document.select("div.container div.row div.box-5x1").mapNotNull { it.toSearchResult() }
+        } else if(request.name.contains("episodes")) {
+            document.select("div.container div.row div.col-12").mapNotNull { it.toSearchEpisodes() }
+        } else {
+            document.select("div.container div.row div.box-5x1").mapNotNull { it.toSearchOuter() }
         }
 
         return newHomePageResponse(request.name, home)
@@ -57,11 +47,20 @@ class AnimercoApi : MainAPI() {
 
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.info a h3")?.text()?.trim() ?: return null
-        val href = fixUrl(this.selectFirst("a")!!.attr("href"))
-        val posterUrl = fixUrlNull(this.selectFirst("a")!!.attr("data-src"))
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
 
-        return newMovieSearchResponse(title, href, TvType.Movie) {
-            this.posterUrl = posterUrl
-        }
+        return newMovieSearchResponse(title, href, TvType.Movie)
+    }
+
+    private fun Element.toSearchEpisodes(): SearchResponse? {
+        val title = this.selectFirst("div.info a h3")?.text()?.trim() ?: return null
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        return newAnimeSearchResponse(title, href, TvType.Anime)
+    }
+
+    private fun Element.toSearchOuter(): SearchResponse? {
+        val title = this.selectFirst("div.info a h3")?.text()?.trim() ?: return null
+        val href = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        return newMovieSearchResponse(title, href, TvType.Movie)
     }
 }
