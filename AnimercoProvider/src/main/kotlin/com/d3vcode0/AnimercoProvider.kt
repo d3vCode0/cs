@@ -34,7 +34,7 @@ class AnimercoProviderApi : MainAPI() {
         val url = if(page ==1) "${mainUrl}/${request.data}/" else "${mainUrl}/${request.data}/page/${page}/"
         val document = app.get(url).document
         if(document.select("title").text() == "Just a moment...") {
-            val document = app.get(url, interceptor = interceptor).document
+            document = app.get(url, interceptor = interceptor).document
         }
         val home = document.select("div.page-content div.container div.row div.box-5x1").mapNotNull {
             it.toSearchResult()
