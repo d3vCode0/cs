@@ -21,7 +21,10 @@ class AnimercoApi : MainAPI() {
     // val weekday = now.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH).lowercase()
 
     override val mainPage = mainPageOf(
-        "animes" to "Animes"
+        "animes" to "Animes",
+        "movies" to "Movies",
+        "episodes" to "episodes",
+        "schedule" to "Episode Schedule"
     )
 
     // companion object {
@@ -36,8 +39,14 @@ class AnimercoApi : MainAPI() {
         if(document.select("title").text() == "Just a moment...") {
             app.get(url, interceptor = interceptor).document.also { document = it }
         }
-        val home = document.select("div.page-content div.container div.row div.box-5x1").mapNotNull {
-            it.toSearchResult()
+        val home = if(request.name == "animes" || request.name == "movies" || request.name == "Episode Schedule") {
+            document.select("div.page-content div.container div.row div.box-5x1").mapNotNull {
+                it.toSearchResult()
+            }
+        } else {
+            document.select("div.page-content div.container div.row div.col-12").mapNotNull {
+                it.toSearchResult()
+            }
         }
 
         return newHomePageResponse(request.name, home)
