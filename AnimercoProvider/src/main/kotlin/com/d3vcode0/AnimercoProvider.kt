@@ -24,7 +24,7 @@ class AnimercoApi : MainAPI() {
         "animes" to "Animes",
         "movies" to "Movies",
         "episodes" to "episodes",
-        "schedule" to "Episode Schedule"
+        //"schedule" to "Episode Schedule"
     )
 
     // companion object {
@@ -40,7 +40,7 @@ class AnimercoApi : MainAPI() {
             app.get(url, interceptor = interceptor).document.also { document = it }
         }
         val home = when (request.name) {
-            "animes", "movies", "Episode Schedule" -> {
+            "animes", "movies" -> {
                 document.select("div.page-content div.container div.row div.box-5x1").mapNotNull {
                     it.toSearchResult()
                 }
