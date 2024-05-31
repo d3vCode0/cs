@@ -1,0 +1,79 @@
+name: Build
+
+concurrency: 
+  group: "build"
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      # choose your default branch
+      - master
+      - main
+    paths-ignore:
+      - '*.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+        with:
+          path: "src"
+
+      - name: Ensure builds branch exists
+        run: |
+          branch_name="builds"
+          if git show-ref --verify --quiet "refs/heads/$branch_name"; then
+            echo "builds branch exists"
+          else
+            echo "Creating builds branch"
+            git config --global user.email "actions@github.com"
+            git config --global user.name "GitHub Actions"
+            git checkout --orphan $branch_name || exit 0  # Exit successfully if branch already exists
+            git rm -rf .
+            echo 'Builds repo' >> README.md
+            git add README.md
+            git commit -m "Initial commit for new branch"
+            git push origin $branch_name
+          fi
+
+      - name: Checkout builds
+        uses: actions/checkout@master
+        with:
+          ref: "builds"
+          path: "builds"
+
+      - name: Clean old builds
+        run: |
+          if ls $GITHUB_WORKSPACE/builds/*.cs3 1> /dev/null 2>&1; then
+            rm $GITHUB_WORKSPACE/builds/*.cs3
+          else
+            echo "No files with .cs3 extension found, skipping cleanup."
+          fi
+
+      - name: Setup JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build Plugins
+        run: |
+          cd $GITHUB_WORKSPACE/src
+          chmod +x gradlew
+          ./gradlew make makePluginsJson
+          cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
+          cp build/plugins.json $GITHUB_WORKSPACE/builds
+
+      - name: Push builds
+        run: |
+          cd $GITHUB_WORKSPACE/builds
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add .
+          git commit --amend -m "Build $GITHUB_SHA" || exit 0   # do not error if nothing to commit
+          git push --force
