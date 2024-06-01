@@ -1,6 +1,9 @@
 package com.d3vcode0
 
 import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.LoadResponse.Companion.addRating
+import com.lagradost.cloudstream3.LoadResponse.Companion.addDuration
+import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import org.jsoup.nodes.Element
 import java.time.LocalDate
@@ -93,7 +96,11 @@ class AnimercoApi : MainAPI() {
 
         val tags = document.select("div.genres a").mapNotNull{ it.text().trim() }
         val plot = document.select("div.content p").text().trim()
-        
+        val rating = document.select("div.votes span.score").text().trim().toRatingInt()
+        val duration = document.select("ul.media-info li:contains(مدة الحلقة:) span")?.text()?.getIntFromText()
+        val trailer = fixUrlNull(document.select("button#btn-trailer").attr("data-href"))
+
+
         return if(url.contains("movies")){
             newMovieLoadResponse(
                 title,
@@ -105,6 +112,9 @@ class AnimercoApi : MainAPI() {
                 this.tags = tags
                 this.plot = plot
                 this.backgroundPosterUrl = posterUrlBg
+                this.duration = duration
+                addRating(rating)
+                addTrailer(trailer)
             }
         } else {
             newAnimeLoadResponse(
@@ -117,6 +127,9 @@ class AnimercoApi : MainAPI() {
                 this.tags = tags
                 this.plot = plot
                 this.backgroundPosterUrl = posterUrlBg
+                this.duration = duration
+                addRating(rating)
+                addTrailer(trailer)
             }
         }
     }
@@ -164,5 +177,9 @@ class AnimercoApi : MainAPI() {
             this.posterUrl = posterUrl
             addSub(episodes = episode?.toIntOrNull())
         }
+    }
+
+    private fun String.getIntFromText(): Int? {
+        return Regex("""\d+""").find(this)?.groupValues?.firstOrNull()?.toIntOrNull()
     }
 }
