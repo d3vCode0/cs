@@ -4,11 +4,15 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addRating
 import com.lagradost.cloudstream3.LoadResponse.Companion.addDuration
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.loadExtractor
+import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.network.CloudflareKiller
 import org.jsoup.nodes.Element
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+import java.util.Base64
 
 class AnimercoApi : MainAPI() {
     override var mainUrl = "https://ww3.animerco.org"
@@ -96,6 +100,7 @@ class AnimercoApi : MainAPI() {
 
         val tags = document.select("div.genres a").mapNotNull{ it.text().trim() }
         val plot = document.select("div.content p").text().trim()
+        val year = document.select("ul.media-info li:contains(بداية العرض:) a").text().trim().toIntOrNull()
         val rating = document.select("div.votes span.score").text().trim().toRatingInt()
         val duration = document.select("ul.media-info li:contains(مدة الحلقة:) span")?.text()?.getIntFromText()
         val trailer = fixUrlNull(document.select("button#btn-trailer").attr("data-href"))
@@ -113,10 +118,30 @@ class AnimercoApi : MainAPI() {
                 this.plot = plot
                 this.backgroundPosterUrl = posterUrlBg
                 this.duration = duration
+                this.year = year
                 addRating(rating)
                 addTrailer(trailer)
             }
-        } else {
+        } else if(url.contains("animes")) {
+            val episodes = ArrayList<Episode>()
+            val getSeasons = document.select("ul.episodes-lists li").forEach { seasonElement ->
+                val numSeason = seasonElement.attr("data-number")
+                val seasonUrl = seasonElement.select("a.title").attr("href")
+
+                val seasonDoc = app.get(seasonUrl).document.select("ul.episodes-lists li")
+                seasonDoc.forEach { episode ->
+                    episodes.add(
+                        Episode(
+                            episode.select("a.title").attr("href"),
+                            episode.select("a.title h3")?.first()?.ownText(),
+                            numSeason.toIntOrNull(),
+                            episode.attr("data-number").toIntOrNull(),
+                            episode.select("a.image").attr("data-src")
+                        )
+                    )
+                }
+            }
+            
             newAnimeLoadResponse(
                 title,
                 url,
@@ -128,10 +153,81 @@ class AnimercoApi : MainAPI() {
                 this.plot = plot
                 this.backgroundPosterUrl = posterUrlBg
                 this.duration = duration
+                this.year = year
+                addEpisodes(DubStatus.Subbed, episodes)
                 addRating(rating)
                 addTrailer(trailer)
             }
+        } else if(url.contains("seasons")){
+            val episodes = ArrayList<Episode>()
+            document.select("ul.episodes-lists li").map { episode ->
+                episodes.add(
+                    Episode(
+                        episode.select("a.title").attr("href"),
+                        episode.select("a.title h3")?.first()?.ownText(),
+                        null,
+                        episode.attr("data-number").toIntOrNull(),
+                        episode.select("a.image").attr("data-src")
+                    )
+                )
+            }
+            newAnimeLoadResponse(
+                title,
+                url,
+                TvType.Anime,
+                true
+            ){
+                this.posterUrl = posterUrl
+                this.tags = tags
+                this.plot = plot
+                this.backgroundPosterUrl = posterUrlBg
+                addEpisodes(DubStatus.Subbed, episodes)
+                addRating(rating)
+            }
+        } else {
+            val title = document.selectFirst("div.page-head h1")?.text() ?: ""
+            val posterUrl = document.selectFirst("a#click-player")?.attr("data-src")
+            val plot = document.selectFirst("div.server-notice strong")?.text()
+            val addTime = document.selectFirst("span.publish-date")?.text()
+            newMovieLoadResponse(
+                title,
+                url,
+                TvType.AnimeMovie,
+                url
+            ){
+                this.posterUrl = posterUrl
+                this.plot = "${plot} \n ${addTime}"
+            }
         }
+    }
+
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        val document = app.get(data).document
+        document.select("table.table tr td a").map {
+            it.attr("href").let { url ->
+                val iframe = app.get(url).document
+
+                val kuri = iframe.selectFirst("a#link")?.attr("data-url").toString()
+                val decoded = Base64.getDecoder().decode(kuri)
+                val deurl = String(decoded)
+                loadExtractor(deurl, subtitleCallback, callback)
+                //qiwi true
+                //workupload false
+                //mediafire true
+                //vk false
+                //drive false
+                //mega false
+                //yourupload false
+                //mp4upload false
+                //swdyu false
+            }
+        }
+        return true
     }
 
     private fun Element.toSearchSchedule(): SearchResponse? {

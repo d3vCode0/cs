@@ -9,5 +9,9 @@ class AnimercoPlugin: Plugin() {
     override fun load(context: Context) {
         // All providers should be added in this manner. Please don't edit the providers list directly.
         registerMainAPI(AnimercoApi())
+        registerExtractorAPI(AnimercoExtractor())
+        registerExtractorAPI(server1())
+        registerExtractorAPI(server2())
+        registerExtractorAPI(server3())
     }
 }
