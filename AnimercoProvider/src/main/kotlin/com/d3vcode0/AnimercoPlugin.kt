@@ -10,8 +10,10 @@ class AnimercoPlugin: Plugin() {
         // All providers should be added in this manner. Please don't edit the providers list directly.
         registerMainAPI(AnimercoApi())
         registerExtractorAPI(AnimercoExtractor())
-        registerExtractorAPI(server1())
-        registerExtractorAPI(server2())
-        registerExtractorAPI(server3())
+        registerExtractorAPI(WorkUpload())
+        registerExtractorAPI(VkExtractor())
+        registerExtractorAPI(Server1())
+        registerExtractorAPI(Server2())
+        registerExtractorAPI(Server3())
     }
 }
