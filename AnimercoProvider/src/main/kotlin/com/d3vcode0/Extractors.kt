@@ -7,6 +7,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.extractors.StreamWishExtractor
 
 
 class QiwiExtractor : ExtractorApi() {
@@ -85,8 +86,7 @@ class Burstcloud : ExtractorApi() {
                 this.name,
                 url_link,
                 url,
-                Qualities.Unknown.value,
-                isM3u8 = false
+                Qualities.Unknown.value
             )
         )
     }
@@ -149,4 +149,20 @@ class Burstcloud : ExtractorApi() {
     data class Purchase (
         val cdnURL: String
     )
+}
+
+class Swdyu : StreamWishExtractor() {
+    override var name = "Swdyu"
+    override var mainUrl = "https://swdyu.com"
+    override var requiresReferer = false
+}
+class Swhoi : StreamWishExtractor() {
+    override var name = "Swhoi"
+    override var mainUrl = "https://swhoi.com"
+    override var requiresReferer = false
+}
+class Jodwish : StreamWishExtractor() {
+    override var name = "Jodwish"
+    override var mainUrl = "https://jodwish.com"
+    override var requiresReferer = false
 }
