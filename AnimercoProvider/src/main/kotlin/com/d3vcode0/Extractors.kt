@@ -76,13 +76,13 @@ class WorkUpload : ExtractorApi() {
     )
 }
 
-class VkExtractor : ExtractorApi() {
+class VkcomExtractor : ExtractorApi() {
     override val name = "Qiwi"
     override val mainUrl = "https://vk.com"
 
     override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
         val document = app.get(url).document
-        val mpfour = document.selectFirst("a.FlatButton").attr("href")
+        val mpfour = document.selectFirst("a.FlatButton")?.attr("href")
 
         return listOf(
             ExtractorLink(
