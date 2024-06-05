@@ -1,17 +1,18 @@
 package com.d3vcode0
 
 import android.util.Log
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import okhttp3.*
 import okhttp3.Request
-import org.json.JSONObject
-import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 
 
@@ -48,99 +49,60 @@ class Burstcloud : ExtractorApi() {
     override val requiresReferer = true
 
     override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
+        val api_info = "https://www.burstcloud.co/file/share-info/"
+        val api_req = "https://www.burstcloud.co/file/play-request/"
         val uid = url.split("/")[4]
-        Log.d("DEV_${this.name}", "uid » ${uid}")
+        val bodyToken = "token=${uid}"
+        val requestBody = RequestBody.create("application/x-www-form-urlencoded; charset=UTF-8".toMediaTypeOrNull(), bodyToken)
 
-        val mediaType = "text/plain; charset=utf-8".toMediaType()
-        val requestBody = "token=${uid}".toRequestBody(mediaType)
+        val headers = mapOf(
+            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
+            "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
+            "Cookie" to "session=8b64c4a8d3664ba62ee8e02ed9b4d6d67f998a9f"
+        )
+        data class FileList(
+            @JsonProperty("id") val id: Int
+        )
+        data class PollingData(
+            @JsonProperty("fileList") val fileList: List<FileList>
+        )
+        data class Main(
+            @JsonProperty("hash") val hash: String
+        )
+        data class Purchase(
+            @JsonProperty("purchase") val purchase: List<Main>
+        )
 
-        val request = Request.Builder()
-            .url("https://www.burstcloud.co/file/share-info/")
-            .post(requestBody)
-            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0")
-            .addHeader("Accept", "application/json, text/javascript, */*; q=0.01")
-            .addHeader("Accept-Language", "en-US,en;q=0.5")
-            .addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-            .addHeader("X-Requested-With", "XMLHttpRequest")
-            .addHeader("Sec-Fetch-Dest", "empty")
-            .addHeader("Sec-Fetch-Mode", "cors")
-            .addHeader("Sec-Fetch-Site", "same-origin")
-            .addHeader("Referer", url)
-            // Add any additional headers as needed
-            .build()
-        Log.d("DEV_${this.name}", "Request » ${request}")
-        Log.d("DEV_${this.name}", "Request » ${request.body?.toString()}")
-        Log.d("DEV_${this.name}", "Request » ${JSONObject(request.toString())}")
+        val req = app.post(api_info, requestBody = requestBody, headers = headers).text
+        Log.d("DEV_${this.name}", "req » ${req}")
+
+        val sid = tryParseJson<PollingData>(req)?.fileList?.apmap { me ->
+            me.id
+        }.toString().replace("[","").replace("]","")
+        Log.d("DEV_${this.name}", "id » ${sid}")
+
+        val bodyFile = "fileId=${sid}"
+        val reqBody = RequestBody.create("application/x-www-form-urlencoded; charset=UTF-8".toMediaTypeOrNull(), bodyFile)
+        val nextReq = app.post(api_req, requestBody = reqBody, headers = headers, referer = url).text
+        Log.d("DEV_${this.name}", "nextReq » ${nextReq}")
+
+        val hash = tryParseJson<Purchase>(nextReq)?.purchase?.apmap { me ->
+            me.hash
+        }.toString().replace("[","").replace("]","")
+        Log.d("DEV_${this.name}", "hash » ${hash}")
 
         return listOf(
             ExtractorLink(
                 this.name,
                 this.name,
-                "https://s248.vidcache.net:8166/play/a20240604y28Kk57oG1u/[Animerco%20com]%20K8G%20-%2008.mp4?&cid=33529094",
-                url,
-                Qualities.Unknown.value
+                hash,
+                "https://burstcloud.co",
+                Qualities.Unknown.value,
+                isM3u8 = false
+
             )
         )
     }
-
-    data class Main (
-        val fileList: List<FileList>
-    )
-
-    data class FileList (
-        val id: Long,
-        val name: String,
-        val description: Any? = null,
-        val path: String,
-        val public: Long,
-        val password: Any? = null,
-        val hashType: String,
-        val hash: String,
-        val size: Long,
-        val ext: String,
-        val encoding: String,
-        val mimeType: String,
-        val usageType: String,
-        val tempFile: String,
-        val tempName: String,
-        val sendResult: String,
-        val jobHandle: String,
-        val jobLog: String,
-        val startedAt: Any? = null,
-        val completedAt: String,
-        val status: String,
-        val statusDescription: String,
-        val stepTotal: Long,
-        val stepComplete: Long,
-        val frameTotal: Long,
-        val frameComplete: Long,
-        val frameDescription: String,
-        val error: Any? = null,
-        val erroredAt: Any? = null,
-        val retryCount: Long,
-        val downloadViews: Long,
-        val embedViews: Long,
-        val totalViews: Long,
-        val folder: Long,
-        val defaultFolder: Long,
-        val valid: Long,
-        val active: Long,
-        val dateFail: Any? = null,
-        val createdAt: String,
-        val updatedAt: String,
-        val fileID: Long,
-        val userID: Long,
-        val sizeShort: String
-    )
-
-    data class MainLink (
-        val purchase: Purchase,
-        val previewURL: String
-    )
-
-    data class Purchase (
-        val cdnURL: String
-    )
 }
 
 class Vk : ExtractorApi() {
@@ -169,17 +131,17 @@ class Vk : ExtractorApi() {
 class Swdyu : StreamWishExtractor() {
     override var name = "Swdyu"
     override var mainUrl = "https://swdyu.com"
-    override var requiresReferer = false
+    override var requiresReferer = true
 }
 
 class Swhoi : StreamWishExtractor() {
     override var name = "Swhoi"
     override var mainUrl = "https://swhoi.com"
-    override var requiresReferer = false
+    override var requiresReferer = true
 }
 
 class Jodwish : StreamWishExtractor() {
     override var name = "Jodwish"
     override var mainUrl = "https://jodwish.com"
-    override var requiresReferer = false
+    override var requiresReferer = true
 }
