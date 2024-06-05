@@ -9,6 +9,9 @@ import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
 import okhttp3.FormBody
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
 
 class QiwiExtractor : ExtractorApi() {
@@ -46,7 +49,15 @@ class Burstcloud : ExtractorApi() {
     override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
         val uid = url.split("/")[4]
         Log.d("DEV_${this.name}", "uid » ${uid}")
-        val body = FormBody.Builder().addEncoded("token", uid).build()
+
+        val mediaType = "text/plain; charset=utf-8".toMediaType()
+        val requestBody = "token=${uid}"
+            .toRequestBody(mediaType)
+
+        
+        // val body = FormBody.Builder()
+        //     .add("token", uid)
+        //     .build()
         val headers = mapOf(
             "Accept" to "application/json, text/javascript, */*; q=0.01",
             "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
@@ -58,11 +69,12 @@ class Burstcloud : ExtractorApi() {
             "https://www.burstcloud.co/file/share-info/",
             headers = headers,
             referer = url,
-            requestBody = body
+            requestBody = requestBody
         ).parsedSafe<FileList>()
         val id_file = meta?.id.toString()
         Log.d("DEV_${this.name}", "id file » ${id_file}")
-        val body_res = FormBody.Builder().addEncoded("fileId", id_file).build()
+        val body_res = "token=${uid}"
+            .toRequestBody(mediaType)
         val res = app.post(
             "https://www.burstcloud.co/file/play-request/",
             headers = mapOf(
