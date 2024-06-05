@@ -10,6 +10,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
 import okhttp3.*
 import okhttp3.Request
+import org.json.JSONObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
@@ -68,7 +69,8 @@ class Burstcloud : ExtractorApi() {
             // Add any additional headers as needed
             .build()
         Log.d("DEV_${this.name}", "Request » ${request}")
-        Log.d("DEV_${this.name}", "Request » ${request.body}")
+        Log.d("DEV_${this.name}", "Request » ${request.body?.toString()}")
+        Log.d("DEV_${this.name}", "Request » ${JSONObject(request.toString())}")
 
         return listOf(
             ExtractorLink(
