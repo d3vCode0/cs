@@ -8,8 +8,8 @@ import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
-import okhttp3.FormBody
-import okhttp3.MediaType
+import okhttp3.*
+import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 
@@ -51,50 +51,30 @@ class Burstcloud : ExtractorApi() {
         Log.d("DEV_${this.name}", "uid » ${uid}")
 
         val mediaType = "text/plain; charset=utf-8".toMediaType()
-        val requestBody = "token=${uid}"
-            .toRequestBody(mediaType)
+        val requestBody = "token=${uid}".toRequestBody(mediaType)
 
-        
-        // val body = FormBody.Builder()
-        //     .add("token", uid)
-        //     .build()
-        val headers = mapOf(
-            "Accept" to "application/json, text/javascript, */*; q=0.01",
-            "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
-            "X-Requested-With" to "XMLHttpRequest",
-            "Referer" to url,
-            "Cookie" to "session=8b64c4a8d3664ba62ee8e02ed9b4d6d67f998a9f"
-        )
-        val meta = app.post(
-            "https://www.burstcloud.co/file/share-info/",
-            headers = headers,
-            referer = url,
-            requestBody = requestBody
-        ).parsedSafe<FileList>()
-        val id_file = meta?.id.toString()
-        Log.d("DEV_${this.name}", "id file » ${id_file}")
-        val body_res = "token=${uid}"
-            .toRequestBody(mediaType)
-        val res = app.post(
-            "https://www.burstcloud.co/file/play-request/",
-            headers = mapOf(
-                "Accept" to "application/json, text/javascript, */*; q=0.01",
-                "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
-                "X-Requested-With" to "XMLHttpRequest",
-                "Referer" to url,
-                "Cookie" to "session=8b64c4a8d3664ba62ee8e02ed9b4d6d67f998a9f"
-            ),
-            referer = url,
-            requestBody = body_res
-        ).parsedSafe<Purchase>()
-        val url_link = res?.cdnURL.toString()
-        Log.d("DEV_${this.name}", "url link » ${url_link}")
+        val request = Request.Builder()
+            .url("https://www.burstcloud.co/file/share-info/")
+            .post(requestBody)
+            .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0")
+            .addHeader("Accept", "application/json, text/javascript, */*; q=0.01")
+            .addHeader("Accept-Language", "en-US,en;q=0.5")
+            .addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+            .addHeader("X-Requested-With", "XMLHttpRequest")
+            .addHeader("Sec-Fetch-Dest", "empty")
+            .addHeader("Sec-Fetch-Mode", "cors")
+            .addHeader("Sec-Fetch-Site", "same-origin")
+            .addHeader("Referer", url)
+            // Add any additional headers as needed
+            .build()
+        Log.d("DEV_${this.name}", "Request » ${request}")
+        Log.d("DEV_${this.name}", "Request » ${request.body}")
 
         return listOf(
             ExtractorLink(
                 this.name,
                 this.name,
-                url_link,
+                "https://s248.vidcache.net:8166/play/a20240604y28Kk57oG1u/[Animerco%20com]%20K8G%20-%2008.mp4?&cid=33529094",
                 url,
                 Qualities.Unknown.value
             )
