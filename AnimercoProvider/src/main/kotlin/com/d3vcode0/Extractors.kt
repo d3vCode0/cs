@@ -8,6 +8,7 @@ import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
+import okhttp3.FormBody
 
 
 class QiwiExtractor : ExtractorApi() {
@@ -45,9 +46,7 @@ class Burstcloud : ExtractorApi() {
     override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
         val uid = url.split("/")[4]
         Log.d("DEV_${this.name}", "uid » ${uid}")
-        val data_text = mapOf(
-            "token" to uid
-        )
+        val body = FormBody.Builder().addEncoded("token", uid).build()
         val headers = mapOf(
             "Accept" to "application/json, text/javascript, */*; q=0.01",
             "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
@@ -59,10 +58,11 @@ class Burstcloud : ExtractorApi() {
             "https://www.burstcloud.co/file/share-info/",
             headers = headers,
             referer = url,
-            data = data_text
+            requestBody = body
         ).parsedSafe<FileList>()
         val id_file = meta?.id.toString()
         Log.d("DEV_${this.name}", "id file » ${id_file}")
+        val body_res = FormBody.Builder().addEncoded("fileId", id_file).build()
         val res = app.post(
             "https://www.burstcloud.co/file/play-request/",
             headers = mapOf(
@@ -73,9 +73,7 @@ class Burstcloud : ExtractorApi() {
                 "Cookie" to "session=8b64c4a8d3664ba62ee8e02ed9b4d6d67f998a9f"
             ),
             referer = url,
-            data = mapOf(
-                "fileId" to id_file
-            )
+            requestBody = body_res
         ).parsedSafe<Purchase>()
         val url_link = res?.cdnURL.toString()
         Log.d("DEV_${this.name}", "url link » ${url_link}")
@@ -149,6 +147,29 @@ class Burstcloud : ExtractorApi() {
     data class Purchase (
         val cdnURL: String
     )
+}
+
+class Vk : ExtractorApi() {
+    override val name = "Vk"
+    override val mainUrl = "https://vk.com"
+    override val requiresReferer = false
+
+    override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink>? {
+        val document = app.get(url).document
+        val link = document.selectFirst("a.FlatButton")?.attr("href").toString()
+        Log.d("DEV_${this.name}", "Link » ${link}")
+
+        return listOf(
+            
+            ExtractorLink(
+                source  = this.name,
+                name    = this.name,
+                url     = link,
+                referer = "",
+                quality = Qualities.Unknown.value
+            )
+        )
+    }
 }
 
 class Swdyu : StreamWishExtractor() {
