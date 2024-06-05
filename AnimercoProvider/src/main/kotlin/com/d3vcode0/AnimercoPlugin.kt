@@ -14,5 +14,6 @@ class AnimercoPlugin: Plugin() {
         registerExtractorAPI(Swdyu())
         registerExtractorAPI(Swhoi())
         registerExtractorAPI(Jodwish())
+        registerExtractorAPI(Vk())
     }
 }

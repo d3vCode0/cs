@@ -177,11 +177,13 @@ class Swdyu : StreamWishExtractor() {
     override var mainUrl = "https://swdyu.com"
     override var requiresReferer = false
 }
+
 class Swhoi : StreamWishExtractor() {
     override var name = "Swhoi"
     override var mainUrl = "https://swhoi.com"
     override var requiresReferer = false
 }
+
 class Jodwish : StreamWishExtractor() {
     override var name = "Jodwish"
     override var mainUrl = "https://jodwish.com"
