@@ -70,7 +70,7 @@ class Burstcloud : ExtractorApi() {
             @JsonProperty("hash") val hash: String
         )
         data class Purchase(
-            @JsonProperty("purchase") val purchase: List<Main>
+            @JsonProperty("purchase") val purchase: ArrayList<Main>
         )
 
         val req = app.post(api_info, requestBody = requestBody, headers = headers).text
