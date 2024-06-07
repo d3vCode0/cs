@@ -32,7 +32,7 @@ class QiwiExtractor : ExtractorApi() {
                 this.name,
                 "https://spyderrock.com/${source}.mp4",
                 "https://ww3.animerco.org/",
-                Qualities.Unknown.value,
+                Qualities.P1080.value,
                 isM3u8 = false
 
             )
@@ -87,7 +87,7 @@ class Burstcloud : ExtractorApi() {
                 this.name,
                 link,
                 "https://burstcloud.co",
-                Qualities.Unknown.value,
+                Qualities.P1080.value,
                 isM3u8 = false
             )
         )
@@ -123,7 +123,7 @@ class Vk : ExtractorApi() {
                 name    = this.name,
                 url     = link,
                 referer = mainUrl,
-                quality = Qualities.Unknown.value
+                quality = Qualities.P1080.value
             )
         )
     }
@@ -140,10 +140,10 @@ class DriveGoogle : ExtractorApi() {
             url,
             headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
-                "Cookie" to "NID=514=WoJS9prsvrSd9RwxNajXtcGS_rYc8cdA5ZsrvkOAzaV9z4Rt-ZGomLAIdqZV6Mr94csE8PLmf2dNbZg3W6DviimoCRS7R_V-l7Xsn_9uEpSMQOQWhpx4QjW5irG9h5aVqMAA5_ChsgbNmpir55-1zv3d58UejbB_P0zKYEBEHfY",
-                "Referer" to "https://drive.google.com"
-            ),
-            referer = "https://ww3.animerco.org/"
+                "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+                "Cookie" to "NID=514=HDtMGRy8s63EqcvnhfRMMayE7wVdDn4qLuwgqAiw3fXjKpkEObO9K4lFxsfx37SAqqXtO4tscol7g2FEA_iRLjndsBaWoA0BeGhEoY0LOSrNdWr__heYPx9q4WRkAZ1p5qNDQihMmnQ1ZWyB1E6L-6xoYFUcnjcVpPtxclupvlfoOL-V9V-qekfQUjJ0rzoVnltKGEx2hh9sjF2zblLWxFnL3JqanuhCK2mZeDIkhYxyeGhLBanrFSYlqneTqm5FYvX4USOXcWDoVWk2qEMrGV7c9t0; SID=g.a000kggWvq7DZqQfgzFoiCfR3JgOoD9oPeeNAc_BQI6YiouWdHS_07aujsy8D4kH2B3N2e_RZAACgYKAcESARMSFQHGX2MiIh5VtPFO6bK2a645aJMmjhoVAUF8yKoa-H9w9ondODU9fkQNH2nA0076; __Secure-1PSID=g.a000kggWvq7DZqQfgzFoiCfR3JgOoD9oPeeNAc_BQI6YiouWdHS_hbcjJv6gnBYyH2ohoOYKQgACgYKAeoSARMSFQHGX2MioqxBleVo3Gd943bcHFmrYxoVAUF8yKrRZZOOYP7s58gRdJlHL2XV0076; __Secure-3PSID=g.a000kggWvq7DZqQfgzFoiCfR3JgOoD9oPeeNAc_BQI6YiouWdHS_TUgOd_IGQDTk-2lZpabZ2wACgYKAYQSARMSFQHGX2MiGV0V2Yrk7c0uPfLX99vzHxoVAUF8yKqHt6aq2zwtiFEZw-I8dh490076; HSID=AoObqdRHKxV-4En8b; SSID=A2baKAWrx1qsBrXXW; APISID=yEu1EWWcpIwdLBRb/ALydrD1VxrvzFruW6; SAPISID=AxaLSIOC5whHlwvC/ACoHAJLMA_snZPbWr; __Secure-1PAPISID=AxaLSIOC5whHlwvC/ACoHAJLMA_snZPbWr; __Secure-3PAPISID=AxaLSIOC5whHlwvC/ACoHAJLMA_snZPbWr; SIDCC=AKEyXzWUQc-YZCUnBNvxjbkrzFiEkJgYX5E0UOkB-WoknfhQYVK6p2xAJVfANDrEgGl7p9TJ; __Secure-1PSIDCC=AKEyXzWgJDv8o5tz-EvQdJmqXCyhpGE8So6o6fZRZAnhw_BQiiq-YhRPw4V1gp1YK2ZD2ssGAw; __Secure-3PSIDCC=AKEyXzUrRVYYi6mbD7cf-ACg6g8-0ZvkC0J2Sfsv89JeVPPbtNw-drXnRaJ-OXNMTKm59xU0; __Secure-1PSIDTS=sidts-CjIB3EgAEl5wJbTV_09fcGoTMjIqtx5KpDX5cKhdAMREc--ipP2s7fEguuyGworTTfgapxAA; __Secure-3PSIDTS=sidts-CjIB3EgAEl5wJbTV_09fcGoTMjIqtx5KpDX5cKhdAMREc--ipP2s7fEguuyGworTTfgapxAA",
+                "Referer" to "https://drive.google.com/"
+            )
         ).document
         Log.d("DEV_${this.name}", "document » ${document}")
         val download_form = document.selectFirst("form#download-form")?.attr("action")
@@ -159,7 +159,7 @@ class DriveGoogle : ExtractorApi() {
                 name    = this.name,
                 url     = link,
                 referer = "https://drive.usercontent.google.com/",
-                quality = Qualities.Unknown.value
+                quality = Qualities.P1080.value
             )
         )
     }
