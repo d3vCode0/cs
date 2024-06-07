@@ -3,16 +3,13 @@ package com.d3vcode0
 import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
-import com.lagradost.cloudstream3.utils.AppUtils.parseJson
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.extractors.StreamWishExtractor
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import okhttp3.*
-import okhttp3.Request
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
 import com.fasterxml.jackson.annotation.JsonProperty
 
 
@@ -49,15 +46,12 @@ class Burstcloud : ExtractorApi() {
     override val requiresReferer = true
 
     override suspend fun getUrl(url: String, referer: String?, subtitleCallback: (SubtitleFile) -> Unit, callback: (ExtractorLink) -> Unit) {
-        Log.d("DEV_${this.name}", "===== BURSTCLOUD =====")
         val token = url.split("/")[4]
         val headers = mapOf(
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
             "Content-Type" to "application/x-www-form-urlencoded; charset=UTF-8",
             "Cookie" to "session=8b64c4a8d3664ba62ee8e02ed9b4d6d67f998a9f"
         )
-
-        Log.d("DEV_${this.name}", "Start Fetch > Info")
 
         // ========= fetch Info ==========
         val api_info = "https://www.burstcloud.co/file/share-info/"
@@ -123,13 +117,48 @@ class Vk : ExtractorApi() {
         val link = document.selectFirst("a.FlatButton")?.attr("href").toString()
         Log.d("DEV_${this.name}", "Link » ${link}")
 
-        return listOf(
-            
+        return listOf(    
             ExtractorLink(
                 source  = this.name,
                 name    = this.name,
                 url     = link,
                 referer = mainUrl,
+                quality = Qualities.Unknown.value
+            )
+        )
+    }
+}
+
+class DriveGoogle : ExtractorApi() {
+    override val name = "Google Drive"
+    override val mainUrl = "https://drive.google.com"
+    override val requiresReferer = false
+    override suspend fun getUrl(url: String, referer: String?): List<ExtractorLink> {
+        val id = url.split("/")[5]
+        val newUrl = "https://drive.usercontent.google.com/download?id=${id}&export=download&authuser=0"
+        val document = app.get(
+            url,
+            headers = mapOf(
+                "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
+                "Cookie" to "NID=514=WoJS9prsvrSd9RwxNajXtcGS_rYc8cdA5ZsrvkOAzaV9z4Rt-ZGomLAIdqZV6Mr94csE8PLmf2dNbZg3W6DviimoCRS7R_V-l7Xsn_9uEpSMQOQWhpx4QjW5irG9h5aVqMAA5_ChsgbNmpir55-1zv3d58UejbB_P0zKYEBEHfY",
+                "Referer" to "https://drive.google.com"
+            ),
+            referer = "https://ww3.animerco.org/"
+        ).document
+        Log.d("DEV_${this.name}", "document » ${document}")
+        val download_form = document.selectFirst("form#download-form")?.attr("action")
+        val export = document.selectFirst("form#download-form input[name='export']")?.attr("value")
+        val authuser = document.selectFirst("form#download-form input[name='authuser']")?.attr("value")
+        val confirm = document.selectFirst("form#download-form input[name='confirm']")?.attr("value")
+        val uuid = document.selectFirst("form#download-form input[name='uuid']")?.attr("value")
+        val link = "${download_form}?id=${id}&export=${export}&confirm=${confirm}&uuid=${uuid}"
+        Log.d("DEV_${this.name}", "link google » ${link}")
+        return listOf(    
+            ExtractorLink(
+                source  = this.name,
+                name    = this.name,
+                url     = link,
+                referer = "https://drive.usercontent.google.com/",
                 quality = Qualities.Unknown.value
             )
         )

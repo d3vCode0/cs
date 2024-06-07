@@ -12,9 +12,10 @@ class AnimercoPlugin: Plugin() {
         registerMainAPI(AnimercoApi())
         registerExtractorAPI(QiwiExtractor())
         registerExtractorAPI(Burstcloud())
+        registerExtractorAPI(Vk())
+        registerExtractorAPI(DriveGoogle())
         registerExtractorAPI(Swdyu())
         registerExtractorAPI(Swhoi())
         registerExtractorAPI(Jodwish())
-        registerExtractorAPI(Vk())
     }
 }

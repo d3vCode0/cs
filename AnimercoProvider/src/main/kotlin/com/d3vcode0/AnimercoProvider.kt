@@ -215,16 +215,12 @@ class AnimercoApi : MainAPI() {
                 val kuri = iframe.selectFirst("a#link")?.attr("data-url").toString()
                 val decoded = Base64.getDecoder().decode(kuri)
                 val deurl = String(decoded)
-                loadExtractor(deurl, subtitleCallback, callback)
-                //qiwi true
-                //workupload false
-                //mediafire true
-                //vk false
-                //drive false
-                //mega false
-                //yourupload false
-                //mp4upload false
-                //swdyu false
+                if(deurl.contains("yourupload")){
+                    val newUrl = deurl.replace("watch", "embed")
+                    loadExtractor(deurl, subtitleCallback, callback)
+                } else{
+                    loadExtractor(deurl, subtitleCallback, callback)
+                }
             }
         }
         return true
