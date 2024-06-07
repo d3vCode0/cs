@@ -141,11 +141,13 @@ class DriveGoogle : ExtractorApi() {
             headers = mapOf(
                 "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0",
                 "Accept" to "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                "Cookie" to "NID=514=HDtMGRy8s63EqcvnhfRMMayE7wVdDn4qLuwgqAiw3fXjKpkEObO9K4lFxsfx37SAqqXtO4tscol7g2FEA_iRLjndsBaWoA0BeGhEoY0LOSrNdWr__heYPx9q4WRkAZ1p5qNDQihMmnQ1ZWyB1E6L-6xoYFUcnjcVpPtxclupvlfoOL-V9V-qekfQUjJ0rzoVnltKGEx2hh9sjF2zblLWxFnL3JqanuhCK2mZeDIkhYxyeGhLBanrFSYlqneTqm5FYvX4USOXcWDoVWk2qEMrGV7c9t0; SID=g.a000kggWvq7DZqQfgzFoiCfR3JgOoD9oPeeNAc_BQI6YiouWdHS_07aujsy8D4kH2B3N2e_RZAACgYKAcESARMSFQHGX2MiIh5VtPFO6bK2a645aJMmjhoVAUF8yKoa-H9w9ondODU9fkQNH2nA0076; HSID=AoObqdRHKxV-4En8b; SSID=A2baKAWrx1qsBrXXW; APISID=yEu1EWWcpIwdLBRb/ALydrD1VxrvzFruW6; SAPISID=AxaLSIOC5whHlwvC/ACoHAJLMA_snZPbWr; SIDCC=AKEyXzWUQc-YZCUnBNvxjbkrzFiEkJgYX5E0UOkB-WoknfhQYVK6p2xAJVfANDrEgGl7p9TJipP2s7fEguuyGworTTfgapxAA",
+                "Cookie" to "AEC=AQTF6HxCcChOXpxBDa8W158jGscQjL3k-QpMiQludcsvpF_rSd2xwV52aNA; NID=514=ch2TZ4iDZcO9cVrRsTuiQVDcEXt5M_O4_fOJl5AATyKsSxfF458SR4sP6xvyAdqseN3E4BRt7McTep5CP41BXPvgEuRPp5-nCUUr2yCJL0FTZ3qtTTWfqudiL0I6PNfQQ6fv3qxlmcTf3YFn8Cp6mnHfR9ntHkk3yRMCgMGAEUii_e9INBVy31WAFw",
                 "Referer" to "https://drive.google.com/"
             )
         ).document
-        Log.d("DEV_${this.name}", "document » ${document}")
+        val title = document.selectFirst("title")?.text()
+        Log.d("DEV_${this.name}", "Title » ${title}")
+        Log.d("DEV_${this.name}", "newUrl » ${newUrl}")
         val download_form = document.selectFirst("form#download-form")?.attr("action")
         val export = document.selectFirst("form#download-form input[name='export']")?.attr("value")
         val authuser = document.selectFirst("form#download-form input[name='authuser']")?.attr("value")
