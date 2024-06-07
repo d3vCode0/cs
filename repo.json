@@ -1,0 +1,8 @@
+{
+  "name": "1",
+  "description": "test only",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/d3vCode0/cs/builds/plugins.json"
+  ]
+}
